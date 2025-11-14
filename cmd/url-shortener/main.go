@@ -1,18 +1,20 @@
 package main
 
 import (
-	"fmt"
+	"log/slog"
 
 	"github.com/noctusha/url-shortener/internal/config"
+	"github.com/noctusha/url-shortener/internal/logger"
 )
 
 func main() {
 	// init config: cleanenv
 	cfg := config.New()
 
-	fmt.Println(cfg)
-
 	// init logger: slog
+	log := logger.New(cfg.Env)
+	log.Info("starting main", slog.String("env", cfg.Env))
+	log.Debug("debug messages are enabled")
 
 	// init storage: postgres
 
