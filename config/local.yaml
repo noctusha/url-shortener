@@ -1,4 +1,4 @@
-env: "dev" # local, dev, prod
+env: "dev" # также возможны: local, dev, prod
 user: "noctusha"
 pass: "noctushapass"
 host: "localhost"

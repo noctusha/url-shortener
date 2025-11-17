@@ -24,7 +24,7 @@ func New() *Config {
 	// getting configPath from env-variable
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		log.Fatal("CONFIG PATH NOT SET")
+		configPath = "config/local.yaml"
 	}
 
 	// checking if file exists

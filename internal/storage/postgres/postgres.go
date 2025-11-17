@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/noctusha/url-shortener/internal/config"
@@ -27,7 +26,7 @@ func New(cfg *config.Config) (*Storage, error) {
 
 	pgxCfg, err := pgxpool.ParseConfig(connString)
 	if err != nil {
-		return nil, fmt.Errorf("%s: pgxpool parse config error", op)
+		return nil, fmt.Errorf("%s: pgxpool parse config error: %w", op, err)
 	}
 
 	pgxCfg.MaxConns = cfg.MaxConns
@@ -38,31 +37,16 @@ func New(cfg *config.Config) (*Storage, error) {
 
 	dbpool, err := pgxpool.NewWithConfig(ctx, pgxCfg)
 	if err != nil {
-		return nil, fmt.Errorf("%s: pgxpool connect error", op)
+		return nil, fmt.Errorf("%s: pgxpool connect error: %w", op, err)
 	}
 
-	for i := 0; i < 10; i++ {
-		err = dbpool.Ping(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("%s: pgxpool connect error", op)
-		}
-		time.Sleep(250 * time.Millisecond)
+	if err := dbpool.Ping(ctx); err != nil {
+		return nil, fmt.Errorf("%s: ping failed: %w", op, err)
 	}
 
 	slog.Info("connected to postgres",
 		"addr", fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 		"db", cfg.Name)
-
-	_, err = dbpool.Exec(ctx, `
-	CREATE TABLE IF NOT EXISTS url(
-	  id INTEGER PRIMARY KEY,
-	  alias TEXT NOT NULL UNIQUE,
-	  url TEXT NOT NULL);
-	CREATE INDEX IF NOT EXISTS idx_alias ON url(alias);
-	`)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
 
 	return &Storage{db: dbpool}, nil
 }

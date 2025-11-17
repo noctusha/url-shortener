@@ -70,7 +70,7 @@ func New(env string) *slog.Logger {
 			},
 		}))
 
-		slog.Warn("unknown env, fallback to local", slog.String("env", env))
+		log.Warn("unknown env, fallback to local", slog.String("env", env))
 	}
 	return log
 }
