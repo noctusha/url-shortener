@@ -9,15 +9,15 @@ import (
 )
 
 type Config struct {
-	Env         string `yaml:"env" env-default:"local"`
-	StoragePath string `yaml:"storage_path" required:"true"`
-	HTTPServer  `yaml:"http_server"`
-}
-
-type HTTPServer struct {
-	Address     string        `yaml:"address" env-default:"localhost:8081"`
-	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
-	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
+	Env      string        `yaml:"env" env-default:"local"`
+	User     string        `yaml:"user" env-default:""`
+	Pass     string        `yaml:"pass" env-default:""`
+	Host     string        `yaml:"host" env-default:"localhost"`
+	Port     int           `yaml:"port" env-default:"5432"`
+	Name     string        `yaml:"name" env-default:""`
+	MaxConns int32         `yaml:"max_conns" env-default:"5"`
+	MinConns int32         `yaml:"min_conns" env-default:"2"`
+	Timeout  time.Duration `yaml:"timeout" env-default:"5s"`
 }
 
 func New() *Config {

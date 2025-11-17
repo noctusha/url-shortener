@@ -3,6 +3,8 @@ package logger
 import (
 	"log/slog"
 	"os"
+
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -16,11 +18,11 @@ func New(env string) *slog.Logger {
 
 	switch env {
 	case envLocal:
-		// использую Stderr (standard error), поскольку это канал для ошибок и диагностических сообщений.
+		// использую stderr (standard error), поскольку это канал для ошибок и диагностических сообщений
 		log = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
 			Level:     slog.LevelDebug,
 			AddSource: true,
-			// кастомизация логов, например, времени
+			// кастомизация логов - например, времени
 			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 				if a.Key == slog.TimeKey {
 					t := a.Value.Time()
@@ -54,6 +56,21 @@ func New(env string) *slog.Logger {
 				return a
 			},
 		}))
+	default:
+		// fallback
+		log = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+			Level:     slog.LevelDebug,
+			AddSource: true,
+			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+				if a.Key == slog.TimeKey {
+					t := a.Value.Time()
+					return slog.String("timestamp", t.Format("2006-01-02 15:04:05"))
+				}
+				return a
+			},
+		}))
+
+		slog.Warn("unknown env, fallback to local", slog.String("env", env))
 	}
 	return log
 }

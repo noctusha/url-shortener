@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: urlshortener_postgres
+    environment:
+      POSTGRES_DB: url-shortener
+      POSTGRES_USER: noctusha
+      POSTGRES_PASSWORD: noctushapass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
