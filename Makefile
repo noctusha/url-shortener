@@ -14,7 +14,8 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-.PHONY: run build migrate-up migrate-down migrate-new docker-up docker-down # указывает make, что это команды, а не файлы
+# указывает make, что это команды, а не файлы
+.PHONY: run build migrate-up migrate-down migrate-new docker-up docker-down
 
 run:
 	$(SHELL) -Command "setx CONFIG_PATH '$(CONFIG_PATH)'"

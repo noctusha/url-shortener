@@ -3,8 +3,6 @@ package logger
 import (
 	"log/slog"
 	"os"
-
-	_ "github.com/lib/pq"
 )
 
 const (

@@ -5,9 +5,9 @@ services:
     image: postgres:16
     container_name: urlshortener_postgres
     environment:
-      POSTGRES_DB: url-shortener
-      POSTGRES_USER: noctusha
-      POSTGRES_PASSWORD: noctushapass
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:

@@ -24,6 +24,7 @@ func New() *Config {
 	// getting configPath from env-variable
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
+		log.Println("CONFIG_PATH empty, using default local config")
 		configPath = "config/local.yaml"
 	}
 

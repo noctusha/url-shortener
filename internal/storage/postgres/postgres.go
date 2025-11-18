@@ -10,10 +10,11 @@ import (
 )
 
 type Storage struct {
-	db *pgxpool.Pool
+	db  *pgxpool.Pool
+	log *slog.Logger
 }
 
-func New(cfg *config.Config) (*Storage, error) {
+func New(cfg *config.Config, log *slog.Logger) (*Storage, error) {
 	const op = "storage.postgres.New"
 
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
@@ -44,11 +45,11 @@ func New(cfg *config.Config) (*Storage, error) {
 		return nil, fmt.Errorf("%s: ping failed: %w", op, err)
 	}
 
-	slog.Info("connected to postgres",
+	log.Info("connected to postgres",
 		"addr", fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
-		"db", cfg.Name)
+		"sql", cfg.Name)
 
-	return &Storage{db: dbpool}, nil
+	return &Storage{db: dbpool, log: log}, nil
 }
 
 func (s *Storage) Conn() *pgxpool.Pool {

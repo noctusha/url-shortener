@@ -19,15 +19,16 @@ func main() {
 	log.Debug("debug messages are enabled")
 
 	// init storage: postgres
-	storage, err := postgres.New(cfg)
+	storage, err := postgres.New(cfg, log)
 	if err != nil {
-		log.Error("failed to initialize storage", err.Error())
+		log.Error("failed to initialize storage", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
-
-	_ = storage
+	defer storage.Close()
 
 	// init router: chi
+
+	// middleware
 
 	// run server
 }
