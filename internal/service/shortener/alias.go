@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// todo: add test
 func Random(size int) string {
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	chars := []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
