@@ -3,7 +3,7 @@ user: "user"
 pass: "pass"
 host: "localhost"
 port: 5432
-name: "url-shortener_handler"
+name: "url-shortener"
 max_conns: 5
 min_conns: 2
 timeout: 5s

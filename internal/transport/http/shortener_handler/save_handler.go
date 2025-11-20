@@ -24,7 +24,7 @@ type Response struct {
 }
 
 type Shortener interface {
-	SaveURL(ctx context.Context, url, alias string) (int32, string, error)
+	URLSave(ctx context.Context, url, alias string) (int32, string, error)
 }
 
 func New(log *slog.Logger, v *validator.Validate, shortener Shortener) http.HandlerFunc {
@@ -54,7 +54,7 @@ func New(log *slog.Logger, v *validator.Validate, shortener Shortener) http.Hand
 
 		log.Info("request body decoded", slog.Any("req", req))
 
-		id, alias, err := shortener.SaveURL(r.Context(), req.Url, req.Alias)
+		id, alias, err := shortener.URLSave(r.Context(), req.Url, req.Alias)
 		if err != nil {
 			if errors.Is(err, short.ErrAliasAlreadyExists) {
 				log.Info("url already exists", slog.String("url", req.Url))

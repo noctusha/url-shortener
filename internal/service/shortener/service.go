@@ -23,7 +23,7 @@ func NewService(repo URLRepository, log *slog.Logger) *Service {
 	}
 }
 
-func (s *Service) SaveURL(ctx context.Context, url, alias string) (int32, string, error) {
+func (s *Service) URLSave(ctx context.Context, url, alias string) (int32, string, error) {
 	const op = "service.shortener_handler.URLSave"
 	if alias == "" {
 		alias = Random(AliasLength)
