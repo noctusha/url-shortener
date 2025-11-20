@@ -15,7 +15,7 @@ type Storage struct {
 }
 
 func New(cfg *config.Config, log *slog.Logger) (*Storage, error) {
-	const op = "storage.postgres.New"
+	const op = "storage.postgres.MustLoad"
 
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.User,

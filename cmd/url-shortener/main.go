@@ -6,23 +6,25 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-playground/validator/v10"
 	"github.com/noctusha/url-shortener/internal/config"
 	"github.com/noctusha/url-shortener/internal/logger"
 	"github.com/noctusha/url-shortener/internal/service/shortener"
 	"github.com/noctusha/url-shortener/internal/storage/postgres"
 	mw "github.com/noctusha/url-shortener/internal/transport/http/middleware/logger"
+	handler "github.com/noctusha/url-shortener/internal/transport/http/shortener_handler"
 )
 
 func main() {
 	// init config: cleanenv
-	cfg := config.New()
+	cfg := config.MustLoad()
 
 	// init logger: slog
 	log := logger.New(cfg.Env)
 	log.Info("starting main", slog.String("env", cfg.Env))
 	log.Debug("debug messages are enabled")
 
-	// init storage: postgres
+	// init storage: postgres (infrastructure layer)
 	storage, err := postgres.New(cfg, log)
 	if err != nil {
 		log.Error("failed to initialize storage", slog.String("error", err.Error()))
@@ -30,15 +32,17 @@ func main() {
 	}
 	defer storage.Close()
 
-	// repository (postgres)
+	// repository, storage repo
 	urlRepo := postgres.NewURLRepository(storage.Conn())
 
-	// service
+	// service (business logic)
 	service := shortener.NewService(urlRepo, log)
 	_ = service
 
 	// init router: chi
 	router := chi.NewRouter()
+
+	// http layer?
 
 	// middleware
 	router.Use(middleware.RequestID) // tracing requester's ID
@@ -47,5 +51,9 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
+	v := validator.New()
+	router.Post("/url", handler.New(log, v, service))
+
+	log.Info("starting server", slog.String("address", cfg.Host))
 	// run server
 }

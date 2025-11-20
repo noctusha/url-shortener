@@ -20,7 +20,7 @@ type Config struct {
 	Timeout  time.Duration `yaml:"timeout" env-default:"5s"`
 }
 
-func New() *Config {
+func MustLoad() *Config {
 	// getting configPath from env-variable
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {

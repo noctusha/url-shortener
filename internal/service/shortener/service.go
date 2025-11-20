@@ -2,11 +2,14 @@ package shortener
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
-	"github.com/noctusha/url-shortener/internal/storage/postgres"
+	"github.com/noctusha/url-shortener/internal/storage"
 )
+
+const AliasLength = 6
 
 type Service struct {
 	repo URLRepository
@@ -20,16 +23,20 @@ func NewService(repo URLRepository, log *slog.Logger) *Service {
 	}
 }
 
-func (s *Service) URLSave(ctx context.Context, url string, alias string) (int32, error) {
-	const op = "service.shortener.URLSave"
+func (s *Service) SaveURL(ctx context.Context, url, alias string) (int32, string, error) {
+	const op = "service.shortener_handler.URLSave"
+	if alias == "" {
+		alias = Random(AliasLength)
+	}
+
 	id, err := s.repo.SaveURL(ctx, url, alias)
 	if err != nil {
-		if err == postgres.ErrAliasExists {
+		if errors.Is(err, storage.ErrAliasExists) {
 			s.log.Warn("alias already exists", "alias", alias)
-		} else {
-			s.log.Error("failed to save url", "error", err)
+			return 0, "", ErrAliasAlreadyExists
 		}
-		return 0, fmt.Errorf("%s:%w", op, err)
+		s.log.Error("failed to save url", "error", err)
+		return 0, "", fmt.Errorf("%s: %w", op, err)
 	}
 
 	s.log.Info("url saved",
@@ -38,5 +45,5 @@ func (s *Service) URLSave(ctx context.Context, url string, alias string) (int32,
 		"url", url,
 	)
 
-	return id, nil
+	return id, alias, nil
 }

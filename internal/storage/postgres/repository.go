@@ -5,15 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
+	"github.com/noctusha/url-shortener/internal/storage"
 	sqlc "github.com/noctusha/url-shortener/internal/storage/sqlc"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-)
-
-var (
-	ErrAliasExists = fmt.Errorf("alias URL already exists")
-	ErrURLNotFound = fmt.Errorf("url not found")
 )
 
 type Repository struct {
@@ -37,7 +34,7 @@ func (r *Repository) SaveURL(ctx context.Context, url, alias string) (int32, err
 	if err != nil {
 		// 23505 = unique_violation
 		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
-			return 0, fmt.Errorf("%s: %w", op, ErrAliasExists)
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrAliasExists)
 		}
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -49,7 +46,7 @@ func (r *Repository) GetURL(ctx context.Context, alias string) (string, error) {
 	url, err := r.q.GetURL(ctx, alias)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", fmt.Errorf("%s: %w", op, ErrURLNotFound)
+			return "", fmt.Errorf("%s: %w", op, storage.ErrURLNotFound)
 		}
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
