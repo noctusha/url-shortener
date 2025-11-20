@@ -23,6 +23,9 @@ type Response struct {
 	resp.Response
 }
 
+// TODO: add mocks
+//
+//go:generate go run github.com/vektra/mockery@latest --name=Shortener
 type Shortener interface {
 	URLSave(ctx context.Context, url, alias string) (int32, string, error)
 }

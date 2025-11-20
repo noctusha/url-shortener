@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -18,6 +21,10 @@ import (
 )
 
 func main() {
+	// каналы для graceful shutdown
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
 	// init config: cleanenv
 	cfg := config.MustLoad()
 
@@ -67,8 +74,22 @@ func main() {
 	}
 
 	// run server
-	if err := srv.ListenAndServe(); err != nil {
-		log.Error("failed to start server", slog.String("error", err.Error()))
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Error("failed to start server", slog.String("error", err.Error()))
+		}
+	}()
+
+	<-signalChan
+	log.Info("Received termination signal, server is shutting down...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// плавная остановка сервера
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("server forced to shutdown", slog.String("error", err.Error()))
+	} else {
+		log.Info("server gracefully stopped")
 	}
-	log.Info("server stopped", slog.String("address", cfg.Host))
 }
