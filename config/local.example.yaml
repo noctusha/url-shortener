@@ -2,6 +2,7 @@ env: "dev" # также возможны: local, dev, prod
 user: "user"
 pass: "pass"
 host: "localhost"
+http_addr: ":8080"
 port: 5432
 name: "url-shortener"
 max_conns: 5

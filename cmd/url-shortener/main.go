@@ -2,7 +2,9 @@ package main
 
 import (
 	"log/slog"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -55,5 +57,18 @@ func main() {
 	router.Post("/url", handler.New(log, v, service))
 
 	log.Info("starting server", slog.String("address", cfg.Host))
+	// init server
+	srv := http.Server{
+		Addr:         cfg.HTTPAddr,
+		Handler:      router,
+		ReadTimeout:  cfg.Timeout,      // ограничение чтения запроса
+		WriteTimeout: cfg.Timeout,      // ограничение записи ответа
+		IdleTimeout:  30 * time.Second, // время простоя keep-alive соединения
+	}
+
 	// run server
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failed to start server", slog.String("error", err.Error()))
+	}
+	log.Info("server stopped", slog.String("address", cfg.Host))
 }

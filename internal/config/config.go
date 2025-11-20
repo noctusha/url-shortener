@@ -13,6 +13,7 @@ type Config struct {
 	User     string        `yaml:"user" env-default:""`
 	Pass     string        `yaml:"pass" env-default:""`
 	Host     string        `yaml:"host" env-default:"localhost"`
+	HTTPAddr string        `yaml:"http_addr" env-default:":8080"`
 	Port     int           `yaml:"port" env-default:"5432"`
 	Name     string        `yaml:"name" env-default:""`
 	MaxConns int32         `yaml:"max_conns" env-default:"5"`
