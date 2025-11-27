@@ -1,7 +1,6 @@
 package shortenerhandler
 
 import (
-	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -23,16 +22,11 @@ type Response struct {
 	resp.Response
 }
 
-// TODO: add mocks
-type Shortener interface {
-	URLSave(ctx context.Context, url, alias string) (int32, string, error)
-}
-
-func New(log *slog.Logger, v *validator.Validate, shortener Shortener) http.HandlerFunc {
+func (h *Handler) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "http.shortenerhandler.url.save.New"
+		const op = "http.shortenerhandler.url.save"
 
-		log = log.With(
+		logger := h.log.With(
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
@@ -40,34 +34,34 @@ func New(log *slog.Logger, v *validator.Validate, shortener Shortener) http.Hand
 		var req Request
 		// render.Bind = DecodeJSON (json.Unmarshal) + Bind(); логика DTO
 		if err := render.Bind(r, &req); err != nil {
-			log.Error("failed to bind request", slog.String("error", err.Error()))
+			logger.Error("failed to bind request", slog.String("error", err.Error()))
 			render.JSON(w, r, resp.Error("invalid request"))
 			return
 		}
 
 		// логика правил (struct tags)
-		if err := v.Struct(req); err != nil {
+		if err := h.v.Struct(req); err != nil {
 			valErr := err.(validator.ValidationErrors)
-			log.Error("failed to validate request", slog.String("error", err.Error()))
+			logger.Error("failed to validate request", slog.String("error", err.Error()))
 			render.JSON(w, r, resp.ValidationError(valErr))
 			return
 		}
 
-		log.Info("request body decoded", slog.Any("req", req))
+		logger.Info("request body decoded", slog.Any("req", req))
 
-		id, alias, err := shortener.URLSave(r.Context(), req.Url, req.Alias)
+		id, alias, err := h.svc.URLSave(r.Context(), req.Url, req.Alias)
 		if err != nil {
 			if errors.Is(err, short.ErrAliasAlreadyExists) {
-				log.Info("url already exists", slog.String("url", req.Url))
+				logger.Info("url already exists", slog.String("url", req.Url))
 				render.JSON(w, r, resp.Error("url already exists"))
 				return
 			}
-			log.Error("failed to save url", slog.String("error", err.Error()))
+			logger.Error("failed to save url", slog.String("error", err.Error()))
 			render.JSON(w, r, resp.Error("failed to save url"))
 			return
 		}
 
-		log.Info("url saved", slog.Int("id", int(id)))
+		logger.Info("url saved", slog.Int("id", int(id)))
 
 		render.JSON(w, r, Response{
 			Response: resp.OK(),

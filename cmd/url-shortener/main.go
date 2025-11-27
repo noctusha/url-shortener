@@ -62,7 +62,8 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	v := validator.New()
-	router.Post("/url", handler.New(log, v, service))
+	hand := handler.New(log, v, service)
+	router.Post("/url", hand.Save())
 
 	log.Info("starting server", slog.String("address", cfg.Host))
 	// init server
