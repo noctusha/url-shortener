@@ -1,0 +1,4 @@
+packages:
+  github.com/noctusha/url-shortener/internal/transport/http/shortenerhandler:
+    interfaces:
+      Shortener: {}

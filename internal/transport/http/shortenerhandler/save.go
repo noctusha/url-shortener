@@ -1,4 +1,4 @@
-package shortener_handler
+package shortenerhandler
 
 import (
 	"context"
@@ -24,15 +24,13 @@ type Response struct {
 }
 
 // TODO: add mocks
-//
-//go:generate go run github.com/vektra/mockery@latest --name=Shortener
 type Shortener interface {
 	URLSave(ctx context.Context, url, alias string) (int32, string, error)
 }
 
 func New(log *slog.Logger, v *validator.Validate, shortener Shortener) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "http.shortener_handler.url.save.New"
+		const op = "http.shortenerhandler.url.save.New"
 
 		log = log.With(
 			slog.String("op", op),

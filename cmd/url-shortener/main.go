@@ -17,7 +17,7 @@ import (
 	"github.com/noctusha/url-shortener/internal/service/shortener"
 	"github.com/noctusha/url-shortener/internal/storage/postgres"
 	mw "github.com/noctusha/url-shortener/internal/transport/http/middleware/logger"
-	handler "github.com/noctusha/url-shortener/internal/transport/http/shortener_handler"
+	handler "github.com/noctusha/url-shortener/internal/transport/http/shortenerhandler"
 )
 
 func main() {
@@ -52,6 +52,7 @@ func main() {
 	router := chi.NewRouter()
 
 	// http layer?
+	// todo: разобраться нужна ли инициализация транспортного слоя
 
 	// middleware
 	router.Use(middleware.RequestID) // tracing requester's ID

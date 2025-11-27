@@ -2,10 +2,10 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/noctusha/url-shortener/internal/storage"
 	sqlc "github.com/noctusha/url-shortener/internal/storage/sqlc"
 
@@ -45,7 +45,7 @@ func (r *Repository) GetURL(ctx context.Context, alias string) (string, error) {
 	const op = "storage.postgres.GetURL"
 	url, err := r.q.GetURL(ctx, alias)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return "", fmt.Errorf("%s: %w", op, storage.ErrURLNotFound)
 		}
 		return "", fmt.Errorf("%s: %w", op, err)
