@@ -2,12 +2,14 @@ package shortenerhandler
 
 import (
 	"context"
-	"github.com/go-playground/validator/v10"
 	"log/slog"
+
+	"github.com/go-playground/validator/v10"
 )
 
+//go:generate mockery --config=../../../../.mockery.yml
 type Shortener interface {
-	URLSave(ctx context.Context, url, alias string) (int32, string, error)
+	SaveURL(ctx context.Context, url, alias string) (int32, string, error)
 }
 type Handler struct {
 	log *slog.Logger

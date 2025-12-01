@@ -1,4 +1,12 @@
-packages:
-  github.com/noctusha/url-shortener/internal/transport/http/shortenerhandler:
-    interfaces:
-      Shortener: {}
+with-expecter: true
+inpackage: false
+keeptree: false
+
+name: Shortener
+
+# где искать интерфейс
+srcpkg: github.com/noctusha/url-shortener/internal/transport/http/shortenerhandler
+
+# куда класть результат
+outpkg: mocks
+filename: shortener_mock.go

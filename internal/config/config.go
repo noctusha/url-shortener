@@ -22,21 +22,21 @@ type Config struct {
 }
 
 func MustLoad() *Config {
-	// getting configPath from env-variable
+	// читаем путь к конфигу из переменной окружения, при пустом значении используем дефолт
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		log.Println("CONFIG_PATH empty, using default local config")
+		log.Println("CONFIG_PATH is empty, using default local config")
 		configPath = "config/local.yaml"
 	}
 
-	// checking if file exists
+	// проверяем существует ли файл
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("CONFIG FILE DOES NOT EXIST: %s", configPath)
+		log.Fatalf("config: file does not exist: %s", configPath)
 	}
 
 	var cfg Config
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("CANNOT READ CONFIG: %s", err)
+		log.Fatalf("config: cannot read config %s: %v", configPath, err)
 	}
 
 	return &cfg

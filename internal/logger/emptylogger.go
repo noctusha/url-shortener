@@ -5,6 +5,7 @@ import (
 	"log/slog"
 )
 
+// используется в тестах
 func NewEmptyLogger() *slog.Logger {
 	return slog.New(NewDiscardHandler())
 }

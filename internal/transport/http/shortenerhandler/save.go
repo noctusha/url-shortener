@@ -1,12 +1,12 @@
 package shortenerhandler
 
 import (
+	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	short "github.com/noctusha/url-shortener/internal/service/shortener"
 	resp "github.com/noctusha/url-shortener/internal/transport/http/response"
@@ -32,47 +32,41 @@ func (h *Handler) Save() http.HandlerFunc {
 		)
 
 		var req Request
-		// render.Bind = DecodeJSON (json.Unmarshal) + Bind(); логика DTO
-		if err := render.Bind(r, &req); err != nil {
-			logger.Error("failed to bind request", slog.String("error", err.Error()))
-			render.JSON(w, r, resp.Error("invalid request"))
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			logger.Warn("invalid json", slog.String("error", err.Error()))
+			http.Error(w, "invalid JSON", http.StatusBadRequest)
 			return
 		}
 
 		// логика правил (struct tags)
 		if err := h.v.Struct(req); err != nil {
 			valErr := err.(validator.ValidationErrors)
-			logger.Error("failed to validate request", slog.String("error", err.Error()))
-			render.JSON(w, r, resp.ValidationError(valErr))
+			logger.Warn("validation failed", slog.Any("errors", valErr))
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			json.NewEncoder(w).Encode(resp.ValidationError(valErr))
 			return
 		}
 
 		logger.Info("request body decoded", slog.Any("req", req))
 
-		id, alias, err := h.svc.URLSave(r.Context(), req.Url, req.Alias)
+		id, alias, err := h.svc.SaveURL(r.Context(), req.Url, req.Alias)
 		if err != nil {
 			if errors.Is(err, short.ErrAliasAlreadyExists) {
-				logger.Info("url already exists", slog.String("url", req.Url))
-				render.JSON(w, r, resp.Error("url already exists"))
+				logger.Info("alias already exists", slog.String("alias", req.Alias))
+				http.Error(w, "alias already exists", http.StatusConflict)
 				return
 			}
-			logger.Error("failed to save url", slog.String("error", err.Error()))
-			render.JSON(w, r, resp.Error("failed to save url"))
+			logger.Error("unexpected error", slog.String("error", err.Error()))
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 
 		logger.Info("url saved", slog.Int("id", int(id)))
 
-		render.JSON(w, r, Response{
-			Response: resp.OK(),
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(Response{
 			Alias:    alias,
+			Response: resp.OK(),
 		})
 	}
-}
-
-func (r *Request) Bind(_ *http.Request) error {
-	if r.Url == "" {
-		return errors.New("url is required")
-	}
-	return nil
 }

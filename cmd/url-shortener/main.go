@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
@@ -23,7 +24,7 @@ import (
 func main() {
 	// каналы для graceful shutdown
 	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	// init config: cleanenv
 	cfg := config.MustLoad()
@@ -51,9 +52,6 @@ func main() {
 	// init router: chi
 	router := chi.NewRouter()
 
-	// http layer?
-	// todo: разобраться нужна ли инициализация транспортного слоя
-
 	// middleware
 	router.Use(middleware.RequestID) // tracing requester's ID
 	router.Use(middleware.Logger)    // additional logs
@@ -62,10 +60,11 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	v := validator.New()
+	// http layer
 	hand := handler.New(log, v, service)
 	router.Post("/url", hand.Save())
 
-	log.Info("starting server", slog.String("address", cfg.Host))
+	log.Info("starting server", slog.String("address", cfg.HTTPAddr))
 	// init server
 	srv := http.Server{
 		Addr:         cfg.HTTPAddr,
@@ -77,21 +76,21 @@ func main() {
 
 	// run server
 	go func() {
-		if err := srv.ListenAndServe(); err != nil {
-			log.Error("failed to start server", slog.String("error", err.Error()))
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Error("server run error", slog.String("error", err.Error()))
 		}
 	}()
 
 	<-signalChan
-	log.Info("Received termination signal, server is shutting down...")
+	log.Info("termination signal received, shutting down...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// плавная остановка сервера
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Error("server forced to shutdown", slog.String("error", err.Error()))
-	} else {
-		log.Info("server gracefully stopped")
+		log.Error("server forced shutdown", slog.String("error", err.Error()))
+		return
 	}
+	log.Info("server gracefully stopped")
 }
