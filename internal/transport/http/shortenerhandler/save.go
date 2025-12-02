@@ -34,7 +34,8 @@ func (h *Handler) Save() http.HandlerFunc {
 		var req Request
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Warn("invalid json", slog.String("error", err.Error()))
-			http.Error(w, "invalid JSON", http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(resp.Error("invalid JSON"))
 			return
 		}
 
@@ -53,11 +54,13 @@ func (h *Handler) Save() http.HandlerFunc {
 		if err != nil {
 			if errors.Is(err, short.ErrAliasAlreadyExists) {
 				logger.Info("alias already exists", slog.String("alias", req.Alias))
-				http.Error(w, "alias already exists", http.StatusConflict)
+				w.WriteHeader(http.StatusConflict)
+				json.NewEncoder(w).Encode(resp.Error("alias already exists"))
 				return
 			}
 			logger.Error("unexpected error", slog.String("error", err.Error()))
-			http.Error(w, "internal server error", http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(resp.Error("failed to save url"))
 			return
 		}
 
