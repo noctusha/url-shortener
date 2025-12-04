@@ -53,14 +53,21 @@ func (h *Handler) Save() http.HandlerFunc {
 		id, alias, err := h.svc.SaveURL(r.Context(), req.Url, req.Alias)
 		if err != nil {
 			if errors.Is(err, short.ErrAliasAlreadyExists) {
-				logger.Info("alias already exists", slog.String("alias", req.Alias))
+				logger.Info("alias already exists",
+					slog.String("url", req.Url),
+					slog.String("alias", req.Alias),
+				)
 				w.WriteHeader(http.StatusConflict)
 				json.NewEncoder(w).Encode(resp.Error("alias already exists"))
 				return
 			}
-			logger.Error("failed to save url", slog.String("error", err.Error())) // было unexpected error
+			logger.Error("failed to save url",
+				slog.String("url", req.Url),
+				slog.String("alias", alias),
+				slog.String("error", err.Error()),
+			)
 			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(resp.Error("unexpected error")) // failed to save url
+			json.NewEncoder(w).Encode(resp.Error("internal error"))
 			return
 		}
 

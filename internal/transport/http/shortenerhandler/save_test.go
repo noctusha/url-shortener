@@ -76,7 +76,7 @@ func TestSaveHandler(t *testing.T) {
 			alias:     "test_alias",
 			mockErr:   errors.New("failed to save url"),
 			wantCode:  http.StatusInternalServerError,
-			respErr:   "unexpected error",
+			respErr:   "internal error",
 			mockAlias: "",
 		},
 	}

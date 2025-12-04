@@ -37,9 +37,12 @@ func (h *Handler) Redirect() http.HandlerFunc {
 				json.NewEncoder(w).Encode(resp.Error("url not found"))
 				return
 			}
-			logger.Error("failed to get url", slog.String("error", err.Error())) // было unexpected error
+			logger.Error("failed to get url",
+				slog.String("alias", alias),
+				slog.String("error", err.Error()),
+			)
 			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(resp.Error("unexpected error")) // было failed to get url
+			json.NewEncoder(w).Encode(resp.Error("internal error"))
 			return
 		}
 
