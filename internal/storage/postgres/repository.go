@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	short "github.com/noctusha/url-shortener/internal/service/shortener"
+	"github.com/noctusha/url-shortener/internal/storage"
 	sqlc "github.com/noctusha/url-shortener/internal/storage/sqlc"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -34,7 +34,7 @@ func (r *Repository) Save(ctx context.Context, url, alias string) (int32, error)
 	if err != nil {
 		// 23505 = unique_violation
 		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
-			return 0, fmt.Errorf("%s: %w", op, short.ErrAliasAlreadyExists)
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrAliasExists)
 		}
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -46,7 +46,7 @@ func (r *Repository) Get(ctx context.Context, alias string) (string, error) {
 	url, err := r.q.GetURL(ctx, alias)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return "", fmt.Errorf("%s: %w", op, short.ErrURLNotFound)
+			return "", fmt.Errorf("%s: %w", op, storage.ErrURLNotFound)
 		}
 		return "", fmt.Errorf("%s: %w", op, err)
 	}

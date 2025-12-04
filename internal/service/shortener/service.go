@@ -51,7 +51,7 @@ func (s *Service) SaveURL(ctx context.Context, url, alias string) (int32, string
 func (s *Service) GetURL(ctx context.Context, alias string) (string, error) {
 	const op = "service.shortener.GetURL"
 	if alias == "" {
-		return "", fmt.Errorf("%s: %w", op, errors.New("empty could not be empty"))
+		return "", fmt.Errorf("%s: %w", op, errors.New("alias must not be empty"))
 	}
 
 	url, err := s.repo.Get(ctx, alias)

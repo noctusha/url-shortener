@@ -47,7 +47,6 @@ func main() {
 
 	// service (business logic)
 	service := shortener.NewService(urlRepo, log)
-	_ = service
 
 	// init router: chi
 	router := chi.NewRouter()

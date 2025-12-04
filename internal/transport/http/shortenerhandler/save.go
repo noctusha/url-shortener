@@ -14,7 +14,7 @@ import (
 
 type SaveRequest struct {
 	Url   string `json:"url" validate:"required,url"`
-	Alias string `json:"alias,omitempty"` // tutu корректно оставлять omitempty?
+	Alias string `json:"alias,omitempty"`
 }
 
 type SaveResponse struct {
