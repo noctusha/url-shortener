@@ -63,6 +63,7 @@ func main() {
 	// http layer
 	hand := handler.New(log, v, service)
 	router.Post("/url", hand.Save())
+	router.Get("/{alias}", hand.Redirect())
 
 	log.Info("starting server", slog.String("address", cfg.HTTPAddr))
 	// init server

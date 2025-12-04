@@ -21,6 +21,63 @@ func (_m *Shortener) EXPECT() *Shortener_Expecter {
 	return &Shortener_Expecter{mock: &_m.Mock}
 }
 
+// GetURL provides a mock function with given fields: ctx, alias
+func (_m *Shortener) GetURL(ctx context.Context, alias string) (string, error) {
+	ret := _m.Called(ctx, alias)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetURL")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (string, error)); ok {
+		return rf(ctx, alias)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+		r0 = rf(ctx, alias)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, alias)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Shortener_GetURL_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetURL'
+type Shortener_GetURL_Call struct {
+	*mock.Call
+}
+
+// GetURL is a helper method to define mock.On call
+//   - ctx context.Context
+//   - alias string
+func (_e *Shortener_Expecter) GetURL(ctx interface{}, alias interface{}) *Shortener_GetURL_Call {
+	return &Shortener_GetURL_Call{Call: _e.mock.On("GetURL", ctx, alias)}
+}
+
+func (_c *Shortener_GetURL_Call) Run(run func(ctx context.Context, alias string)) *Shortener_GetURL_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *Shortener_GetURL_Call) Return(_a0 string, _a1 error) *Shortener_GetURL_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Shortener_GetURL_Call) RunAndReturn(run func(context.Context, string) (string, error)) *Shortener_GetURL_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SaveURL provides a mock function with given fields: ctx, url, alias
 func (_m *Shortener) SaveURL(ctx context.Context, url string, alias string) (int32, string, error) {
 	ret := _m.Called(ctx, url, alias)

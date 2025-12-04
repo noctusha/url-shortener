@@ -74,9 +74,9 @@ func TestSaveHandler(t *testing.T) {
 			name:      "SaveURL internal error",
 			url:       "https://yahoo.com",
 			alias:     "test_alias",
-			mockErr:   errors.New("unexpected error"),
+			mockErr:   errors.New("failed to save url"),
 			wantCode:  http.StatusInternalServerError,
-			respErr:   "failed to save url",
+			respErr:   "unexpected error",
 			mockAlias: "",
 		},
 	}
@@ -111,7 +111,7 @@ func TestSaveHandler(t *testing.T) {
 
 			require.Equal(t, tt.wantCode, rr.Code)
 
-			var resp Response
+			var resp SaveResponse
 			require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &resp))
 
 			require.Equal(t, tt.respErr, resp.Error)

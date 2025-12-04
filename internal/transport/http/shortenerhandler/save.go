@@ -12,26 +12,26 @@ import (
 	resp "github.com/noctusha/url-shortener/internal/transport/http/response"
 )
 
-type Request struct {
+type SaveRequest struct {
 	Url   string `json:"url" validate:"required,url"`
-	Alias string `json:"alias,omitempty"`
+	Alias string `json:"alias,omitempty"` // tutu корректно оставлять omitempty?
 }
 
-type Response struct {
+type SaveResponse struct {
 	Alias string `json:"alias,omitempty"`
 	resp.Response
 }
 
 func (h *Handler) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "http.shortenerhandler.url.save"
+		const op = "http.shortenerhandler.save"
 
 		logger := h.log.With(
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		var req Request
+		var req SaveRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Warn("invalid json", slog.String("error", err.Error()))
 			w.WriteHeader(http.StatusBadRequest)
@@ -58,16 +58,16 @@ func (h *Handler) Save() http.HandlerFunc {
 				json.NewEncoder(w).Encode(resp.Error("alias already exists"))
 				return
 			}
-			logger.Error("unexpected error", slog.String("error", err.Error()))
+			logger.Error("failed to save url", slog.String("error", err.Error())) // было unexpected error
 			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(resp.Error("failed to save url"))
+			json.NewEncoder(w).Encode(resp.Error("unexpected error")) // failed to save url
 			return
 		}
 
 		logger.Info("url saved", slog.Int("id", int(id)))
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(Response{
+		json.NewEncoder(w).Encode(SaveResponse{
 			Alias:    alias,
 			Response: resp.OK(),
 		})

@@ -10,6 +10,7 @@ import (
 //go:generate mockery --config=../../../../.mockery.yml
 type Shortener interface {
 	SaveURL(ctx context.Context, url, alias string) (int32, string, error)
+	GetURL(ctx context.Context, alias string) (string, error)
 }
 type Handler struct {
 	log *slog.Logger
