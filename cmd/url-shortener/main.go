@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -70,7 +69,6 @@ func main() {
 		r.Post("/", hand.Save())
 		r.Delete("/{alias}", hand.Delete())
 	})
-	fmt.Printf("username = %s, password = %s\n", cfg.Username, cfg.Password)
 
 	router.Get("/{alias}", hand.Redirect())
 
