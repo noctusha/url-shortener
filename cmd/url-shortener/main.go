@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -61,9 +62,17 @@ func main() {
 	v := validator.New()
 	// http layer
 	hand := handler.New(log, v, service)
-	router.Post("/url", hand.Save())
+
+	router.Route("/url", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("url-shortener", map[string]string{
+			cfg.Username: cfg.Password,
+		}))
+		r.Post("/", hand.Save())
+		r.Delete("/{alias}", hand.Delete())
+	})
+	fmt.Printf("username = %s, password = %s\n", cfg.Username, cfg.Password)
+
 	router.Get("/{alias}", hand.Redirect())
-	router.Delete("/url/{alias}", hand.Delete())
 
 	log.Info("starting server", slog.String("address", cfg.HTTPAddr))
 	// init server

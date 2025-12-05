@@ -12,6 +12,8 @@ type Config struct {
 	Env      string        `yaml:"env" env-default:"local"`
 	User     string        `yaml:"user" env-default:""`
 	Pass     string        `yaml:"pass" env-default:""`
+	Username string        `yaml:"username" env-required:"true"`
+	Password string        `yaml:"password" env-required:"true"`
 	Host     string        `yaml:"host" env-default:"localhost"`
 	HTTPAddr string        `yaml:"http_addr" env-default:":8080"`
 	Port     int           `yaml:"port" env-default:"5432"`

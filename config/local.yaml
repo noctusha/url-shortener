@@ -1,6 +1,8 @@
 env: "dev" # также возможны: local, dev, prod
 user: "noctusha"
 pass: "noctushapass"
+username: "username"
+password: "password"
 host: "localhost"
 http_addr: ":8080"
 port: 5432
