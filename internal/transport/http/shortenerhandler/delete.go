@@ -17,7 +17,7 @@ type DeleteRequest struct {
 }
 
 type DeleteResponse struct {
-	Alias string `json:"url"`
+	Alias string `json:"alias"`
 	resp.Response
 }
 

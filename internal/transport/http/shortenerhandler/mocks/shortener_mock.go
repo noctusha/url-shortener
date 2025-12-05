@@ -21,6 +21,53 @@ func (_m *Shortener) EXPECT() *Shortener_Expecter {
 	return &Shortener_Expecter{mock: &_m.Mock}
 }
 
+// DeleteURL provides a mock function with given fields: ctx, alias
+func (_m *Shortener) DeleteURL(ctx context.Context, alias string) error {
+	ret := _m.Called(ctx, alias)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteURL")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, alias)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Shortener_DeleteURL_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteURL'
+type Shortener_DeleteURL_Call struct {
+	*mock.Call
+}
+
+// DeleteURL is a helper method to define mock.On call
+//   - ctx context.Context
+//   - alias string
+func (_e *Shortener_Expecter) DeleteURL(ctx interface{}, alias interface{}) *Shortener_DeleteURL_Call {
+	return &Shortener_DeleteURL_Call{Call: _e.mock.On("DeleteURL", ctx, alias)}
+}
+
+func (_c *Shortener_DeleteURL_Call) Run(run func(ctx context.Context, alias string)) *Shortener_DeleteURL_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *Shortener_DeleteURL_Call) Return(_a0 error) *Shortener_DeleteURL_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Shortener_DeleteURL_Call) RunAndReturn(run func(context.Context, string) error) *Shortener_DeleteURL_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetURL provides a mock function with given fields: ctx, alias
 func (_m *Shortener) GetURL(ctx context.Context, alias string) (string, error) {
 	ret := _m.Called(ctx, alias)
