@@ -9,14 +9,17 @@ import (
 	"context"
 )
 
-const deleteURL = `-- name: DeleteURL :exec
+const deleteURL = `-- name: DeleteURL :execrows
 DELETE from url
 WHERE alias = $1
 `
 
-func (q *Queries) DeleteURL(ctx context.Context, alias string) error {
-	_, err := q.db.Exec(ctx, deleteURL, alias)
-	return err
+func (q *Queries) DeleteURL(ctx context.Context, alias string) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteURL, alias)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const getURL = `-- name: GetURL :one

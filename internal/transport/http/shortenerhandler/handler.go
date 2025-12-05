@@ -11,6 +11,7 @@ import (
 type Shortener interface {
 	SaveURL(ctx context.Context, url, alias string) (int32, string, error)
 	GetURL(ctx context.Context, alias string) (string, error)
+	DeleteURL(ctx context.Context, alias string) error
 }
 type Handler struct {
 	log *slog.Logger

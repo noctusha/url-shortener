@@ -55,24 +55,13 @@ func (r *Repository) Get(ctx context.Context, alias string) (string, error) {
 
 func (r *Repository) Delete(ctx context.Context, alias string) error {
 	const op = "storage.postgres.Delete"
-	err := r.q.DeleteURL(ctx, alias)
+	affected, err := r.q.DeleteURL(ctx, alias)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
-	return nil
 
-	// tutu
-	/*
-		res, err := r.q.DeleteURL(ctx, alias)
-		+    if err != nil {
-		+        return fmt.Errorf("%s: %w", op, err)
-		+    }
-		+
-		+    // FIX: если строка не удалена — значит alias не существует
-		+    if res == 0 {
-		+        return fmt.Errorf("%s: %w", op, short.ErrURLNotFound)
-		+    }
-		+
-		+    return nil
-	*/
+	if affected == 0 {
+		return fmt.Errorf("%s: %w", op, storage.ErrURLNotFound)
+	}
+	return nil
 }

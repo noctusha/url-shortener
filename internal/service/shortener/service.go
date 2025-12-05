@@ -51,7 +51,7 @@ func (s *Service) SaveURL(ctx context.Context, url, alias string) (int32, string
 func (s *Service) GetURL(ctx context.Context, alias string) (string, error) {
 	const op = "service.shortener.GetURL"
 	if alias == "" {
-		return "", fmt.Errorf("%s: %w", op, errors.New("alias must not be empty"))
+		return "", fmt.Errorf("%s: %w", op, ErrInvalidAlias)
 	}
 
 	url, err := s.repo.Get(ctx, alias)
@@ -70,4 +70,30 @@ func (s *Service) GetURL(ctx context.Context, alias string) (string, error) {
 	)
 
 	return url, nil
+}
+
+func (s *Service) DeleteURL(ctx context.Context, alias string) error {
+	const op = "service.shortener.DeleteURL"
+	if alias == "" {
+		return fmt.Errorf("%s: %w", op, ErrInvalidAlias)
+	}
+
+	err := s.repo.Delete(ctx, alias)
+	if err != nil {
+		if errors.Is(err, storage.ErrURLNotFound) {
+			s.log.Warn("url not found", "alias", alias)
+			return ErrURLNotFound
+		}
+		s.log.Error("failed to delete url by alias",
+			slog.String("alias", alias),
+			slog.Any("err", err),
+		)
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	s.log.Info("url for alias deleted",
+		"alias", alias,
+	)
+
+	return nil
 }

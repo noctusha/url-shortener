@@ -13,7 +13,7 @@ import (
 )
 
 type SaveRequest struct {
-	Url   string `json:"url" validate:"required,url"`
+	URL   string `json:"url" validate:"required,url"`
 	Alias string `json:"alias,omitempty"`
 }
 
@@ -50,11 +50,11 @@ func (h *Handler) Save() http.HandlerFunc {
 
 		logger.Info("request body decoded", slog.Any("req", req))
 
-		id, alias, err := h.svc.SaveURL(r.Context(), req.Url, req.Alias)
+		id, alias, err := h.svc.SaveURL(r.Context(), req.URL, req.Alias)
 		if err != nil {
 			if errors.Is(err, short.ErrAliasAlreadyExists) {
 				logger.Info("alias already exists",
-					slog.String("url", req.Url),
+					slog.String("url", req.URL),
 					slog.String("alias", req.Alias),
 				)
 				w.WriteHeader(http.StatusConflict)
@@ -62,7 +62,7 @@ func (h *Handler) Save() http.HandlerFunc {
 				return
 			}
 			logger.Error("failed to save url",
-				slog.String("url", req.Url),
+				slog.String("url", req.URL),
 				slog.String("alias", alias),
 				slog.String("error", err.Error()),
 			)
