@@ -35,6 +35,7 @@ func (h *Handler) Save() http.HandlerFunc {
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Warn("invalid json", slog.String("error", err.Error()))
 			w.WriteHeader(http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(resp.Error("invalid JSON"))
 			return
 		}
@@ -44,6 +45,7 @@ func (h *Handler) Save() http.HandlerFunc {
 			valErr := err.(validator.ValidationErrors)
 			logger.Warn("validation failed", slog.Any("errors", valErr))
 			w.WriteHeader(http.StatusUnprocessableEntity)
+			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(resp.ValidationError(valErr))
 			return
 		}
@@ -58,6 +60,7 @@ func (h *Handler) Save() http.HandlerFunc {
 					slog.String("alias", req.Alias),
 				)
 				w.WriteHeader(http.StatusConflict)
+				w.Header().Set("Content-Type", "application/json")
 				json.NewEncoder(w).Encode(resp.Error("alias already exists"))
 				return
 			}
@@ -67,12 +70,14 @@ func (h *Handler) Save() http.HandlerFunc {
 				slog.String("error", err.Error()),
 			)
 			w.WriteHeader(http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(resp.Error("internal error"))
 			return
 		}
 
 		logger.Info("url saved", slog.Int("id", int(id)))
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(SaveResponse{
 			Alias:    alias,

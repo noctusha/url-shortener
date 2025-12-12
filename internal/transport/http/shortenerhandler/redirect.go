@@ -25,6 +25,7 @@ func (h *Handler) Redirect() http.HandlerFunc {
 		if alias == "" {
 			logger.Warn("alias is empty")
 			w.WriteHeader(http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(resp.Error("invalid request"))
 			return
 		}
@@ -34,6 +35,7 @@ func (h *Handler) Redirect() http.HandlerFunc {
 			if errors.Is(err, shortener.ErrURLNotFound) {
 				logger.Info("url not found", slog.String("alias", alias))
 				w.WriteHeader(http.StatusNotFound)
+				w.Header().Set("Content-Type", "application/json")
 				json.NewEncoder(w).Encode(resp.Error("url not found"))
 				return
 			}
@@ -42,6 +44,7 @@ func (h *Handler) Redirect() http.HandlerFunc {
 				slog.String("error", err.Error()),
 			)
 			w.WriteHeader(http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(resp.Error("internal error"))
 			return
 		}
