@@ -31,7 +31,6 @@ migrate-down:
 	migrate -path migrations -database "$(DATABASE_URL)" down
 
 migrate-new:
-	@if [ -z "$(name)" ]; then echo "Usage: make migrate-new name=init"; exit 1; fi
 	migrate create -ext sql -dir migrations -seq $(name)
 
 docker-up:

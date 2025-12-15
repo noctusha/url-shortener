@@ -32,7 +32,7 @@ func TestRandomLengthPass(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Random(tt.in)
+			got := GenerateAlias(tt.in)
 			if len(got) != tt.want {
 				t.Fatalf("got %s, with len = %d, want len = %d", got, len(got), tt.want)
 			}
@@ -44,7 +44,7 @@ func TestRandomAllowedChars(t *testing.T) {
 	allowed := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 	for i := 0; i < 100; i++ {
-		s := Random(20)
+		s := GenerateAlias(20)
 		for _, ch := range s {
 			if !strings.ContainsRune(allowed, ch) {
 				t.Fatalf("unexpected char: %q in string %q", ch, s)
@@ -58,7 +58,7 @@ func TestRandomUniqueness(t *testing.T) {
 	results := make(map[string]struct{})
 
 	for i := 0; i < n; i++ {
-		s := Random(10)
+		s := GenerateAlias(10)
 		if _, exists := results[s]; exists {
 			t.Fatalf("duplicate detected: %s", s)
 		}

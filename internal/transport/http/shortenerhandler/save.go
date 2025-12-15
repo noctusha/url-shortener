@@ -24,6 +24,7 @@ type SaveResponse struct {
 
 func (h *Handler) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
 		const op = "http.shortenerhandler.save"
 
 		logger := h.log.With(
@@ -34,19 +35,19 @@ func (h *Handler) Save() http.HandlerFunc {
 		var req SaveRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Warn("invalid json", slog.String("error", err.Error()))
-			w.WriteHeader(http.StatusBadRequest)
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(resp.Error("invalid JSON"))
+			resp.WriteJSON(w, http.StatusBadRequest, resp.Error("invalid JSON"))
 			return
 		}
 
 		// логика правил (struct tags)
 		if err := h.v.Struct(req); err != nil {
-			valErr := err.(validator.ValidationErrors)
+			valErr, ok := err.(validator.ValidationErrors)
+			if !ok {
+				resp.WriteJSON(w, http.StatusBadRequest, resp.Error("invalid request"))
+				return
+			}
 			logger.Warn("validation failed", slog.Any("errors", valErr))
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(resp.ValidationError(valErr))
+			resp.WriteJSON(w, http.StatusUnprocessableEntity, resp.ValidationError(valErr))
 			return
 		}
 
@@ -59,9 +60,7 @@ func (h *Handler) Save() http.HandlerFunc {
 					slog.String("url", req.URL),
 					slog.String("alias", req.Alias),
 				)
-				w.WriteHeader(http.StatusConflict)
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resp.Error("alias already exists"))
+				resp.WriteJSON(w, http.StatusConflict, resp.Error("alias already exists"))
 				return
 			}
 			logger.Error("failed to save url",
@@ -69,17 +68,13 @@ func (h *Handler) Save() http.HandlerFunc {
 				slog.String("alias", alias),
 				slog.String("error", err.Error()),
 			)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(resp.Error("internal error"))
+			resp.WriteJSON(w, http.StatusInternalServerError, resp.Error("internal error"))
 			return
 		}
 
 		logger.Info("url saved", slog.Int("id", int(id)))
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(SaveResponse{
+		resp.WriteJSON(w, http.StatusOK, SaveResponse{
 			Alias:    alias,
 			Response: resp.OK(),
 		})

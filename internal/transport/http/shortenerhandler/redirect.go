@@ -1,7 +1,6 @@
 package shortenerhandler
 
 import (
-	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -24,9 +23,7 @@ func (h *Handler) Redirect() http.HandlerFunc {
 		alias := chi.URLParam(r, "alias")
 		if alias == "" {
 			logger.Warn("alias is empty")
-			w.WriteHeader(http.StatusBadRequest)
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(resp.Error("invalid request"))
+			resp.WriteJSON(w, http.StatusNotFound, resp.Error("invalid request"))
 			return
 		}
 
@@ -34,18 +31,14 @@ func (h *Handler) Redirect() http.HandlerFunc {
 		if err != nil {
 			if errors.Is(err, shortener.ErrURLNotFound) {
 				logger.Info("url not found", slog.String("alias", alias))
-				w.WriteHeader(http.StatusNotFound)
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resp.Error("url not found"))
+				resp.WriteJSON(w, http.StatusNotFound, resp.Error("url not found"))
 				return
 			}
 			logger.Error("failed to get url",
 				slog.String("alias", alias),
 				slog.String("error", err.Error()),
 			)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(resp.Error("internal error"))
+			resp.WriteJSON(w, http.StatusInternalServerError, resp.Error("internal error"))
 			return
 		}
 

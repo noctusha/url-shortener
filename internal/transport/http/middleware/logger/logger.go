@@ -12,11 +12,9 @@ import (
 func New(log *slog.Logger) func(next http.Handler) http.Handler {
 	// сам middleware, соответствующий сигнатуре chi
 	return func(next http.Handler) http.Handler {
-		// перезапись логгера с доп. полем
 		log = log.With(
 			slog.String("component", "middleware/logger"),
 		)
-		// однократный инфо-лог о включении middleware
 		log.Info("logger middleware enabled")
 
 		// инициализация http-handler, которым станет middleware при каждом запросе
@@ -48,7 +46,6 @@ func New(log *slog.Logger) func(next http.Handler) http.Handler {
 			// Logger → ...(e.g. Auth → RateLimit) → Business Logic → Response
 			next.ServeHTTP(ww, r)
 		}
-		// превращение func(w http.ResponseWriter, r *http.Request) в интерфейс http.Handler
 		return http.HandlerFunc(fn)
 	}
 }

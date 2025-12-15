@@ -26,7 +26,7 @@ func NewService(repo URLRepository, log *slog.Logger) *Service {
 func (s *Service) SaveURL(ctx context.Context, url, alias string) (int32, string, error) {
 	const op = "service.shortener.SaveURL"
 	if alias == "" {
-		alias = Random(AliasLength)
+		alias = GenerateAlias(AliasLength)
 	}
 
 	id, err := s.repo.Save(ctx, url, alias)

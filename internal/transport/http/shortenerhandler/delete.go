@@ -1,7 +1,6 @@
 package shortenerhandler
 
 import (
-	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -33,9 +32,7 @@ func (h *Handler) Delete() http.HandlerFunc {
 		alias := chi.URLParam(r, "alias")
 		if alias == "" {
 			logger.Warn("alias is empty")
-			w.WriteHeader(http.StatusBadRequest)
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(resp.Error("invalid request"))
+			resp.WriteJSON(w, http.StatusBadRequest, resp.Error("invalid request"))
 			return
 		}
 
@@ -43,26 +40,20 @@ func (h *Handler) Delete() http.HandlerFunc {
 		if err != nil {
 			if errors.Is(err, shortener.ErrURLNotFound) {
 				logger.Info("url not found", slog.String("alias", alias))
-				w.WriteHeader(http.StatusNotFound)
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resp.Error("url not found"))
+				resp.WriteJSON(w, http.StatusNotFound, resp.Error("url not found"))
 				return
 			}
 			logger.Error("failed to delete url by alias",
 				slog.String("alias", alias),
 				slog.String("error", err.Error()),
 			)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(resp.Error("internal error"))
+			resp.WriteJSON(w, http.StatusInternalServerError, resp.Error("internal error"))
 			return
 		}
 
 		logger.Info("url for alias deleted", slog.String("alias", alias))
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(DeleteResponse{
+		resp.WriteJSON(w, http.StatusOK, SaveResponse{
 			Alias:    alias,
 			Response: resp.OK(),
 		})
