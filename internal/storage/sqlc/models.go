@@ -4,8 +4,13 @@
 
 package sql
 
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
 type Url struct {
-	ID    int32  `json:"id"`
-	Url   string `json:"url"`
-	Alias string `json:"alias"`
+	ID       int32            `json:"id"`
+	Url      string           `json:"url"`
+	Alias    string           `json:"alias"`
+	ExpireAt pgtype.Timestamp `json:"expire_at"`
 }

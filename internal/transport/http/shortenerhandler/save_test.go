@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/noctusha/url-shortener/internal/logger"
@@ -52,14 +53,14 @@ func TestSaveHandler(t *testing.T) {
 			url:         "",
 			alias:       "something",
 			wantStatus:  http.StatusUnprocessableEntity,
-			wantRespErr: "field Url is a required field",
+			wantRespErr: "field URL is a required field",
 		},
 		{
 			name:        "Invalid URL",
 			url:         "bulba",
 			alias:       "kartoshka",
 			wantStatus:  http.StatusUnprocessableEntity,
-			wantRespErr: "field Url is not a valid URL",
+			wantRespErr: "field URL is not a valid URL",
 		},
 		{
 			name:        "Alias duplicate",
@@ -86,6 +87,13 @@ func TestSaveHandler(t *testing.T) {
 			wantStatus:  http.StatusBadRequest,
 			wantRespErr: "invalid JSON",
 		},
+		{
+			name:        "ExpireAt in the past",
+			url:         "https://example.com",
+			alias:       "expired",
+			wantStatus:  http.StatusUnprocessableEntity,
+			wantRespErr: "expire_at must be in the future",
+		},
 	}
 
 	for _, tt := range tests {
@@ -101,6 +109,7 @@ func TestSaveHandler(t *testing.T) {
 					mock.Anything,
 					tt.url,
 					tt.alias,
+					mock.Anything,
 				).Return(
 					int32(1),
 					tt.mockAlias,
@@ -109,9 +118,17 @@ func TestSaveHandler(t *testing.T) {
 			}
 
 			var body string
-			if tt.name == "Invalid JSON" {
+			switch tt.name {
+			case "Invalid JSON":
 				body = tt.url
-			} else {
+			case "ExpireAt in the past":
+				body = fmt.Sprintf(
+					`{"url": "%s", "alias": "%s", "expire_at": "%s"}`,
+					tt.url,
+					tt.alias,
+					time.Now().Add(-time.Hour).Format(time.RFC3339),
+				)
+			default:
 				body = fmt.Sprintf(`{"url": "%s", "alias": "%s"}`, tt.url, tt.alias)
 			}
 

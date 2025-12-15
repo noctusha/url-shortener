@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/noctusha/url-shortener/internal/storage"
 	sqlc "github.com/noctusha/url-shortener/internal/storage/sqlc"
 
@@ -25,11 +27,20 @@ func NewURLRepository(db *pgxpool.Pool) *Repository {
 	}
 }
 
-func (r *Repository) Save(ctx context.Context, url, alias string) (int32, error) {
+func (r *Repository) Save(ctx context.Context, url, alias string, expireAt *time.Time) (int32, error) {
 	const op = "storage.postgres.Save"
+	var ts pgtype.Timestamp
+	if expireAt != nil {
+		ts = pgtype.Timestamp{
+			Time:  *expireAt,
+			Valid: true,
+		}
+	}
+
 	id, err := r.q.SaveURL(ctx, sqlc.SaveURLParams{
-		Url:   url,
-		Alias: alias,
+		Url:      url,
+		Alias:    alias,
+		ExpireAt: ts,
 	})
 	if err != nil {
 		// 23505 = unique_violation

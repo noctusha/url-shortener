@@ -53,7 +53,7 @@ func (h *Handler) Delete() http.HandlerFunc {
 
 		logger.Info("url for alias deleted", slog.String("alias", alias))
 
-		resp.WriteJSON(w, http.StatusOK, SaveResponse{
+		resp.WriteJSON(w, http.StatusOK, DeleteResponse{
 			Alias:    alias,
 			Response: resp.OK(),
 		})

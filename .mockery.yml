@@ -4,9 +4,13 @@ keeptree: false
 
 name: Shortener
 
-# где искать интерфейс
-srcpkg: github.com/noctusha/url-shortener/internal/transport/http/shortenerhandler
+# где искать интерфейс (filesystem path)
+dir: internal/transport/http/shortenerhandler
 
-# куда класть результат
+# куда класть сгенерированный mock
+output: internal/transport/http/shortenerhandler/mocks
+
+# имя пакета в сгенерированном файле
 outpkg: mocks
+
 filename: shortener_mock.go

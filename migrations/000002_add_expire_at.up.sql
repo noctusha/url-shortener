@@ -1,0 +1,5 @@
+ALTER TABLE url ADD COLUMN IF NOT EXISTS expire_at TIMESTAMP NULL
+;
+
+CREATE INDEX IF NOT EXISTS idx_url_expire_at ON url(expire_at)
+;

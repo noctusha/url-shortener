@@ -7,6 +7,8 @@ package sql
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const deleteURL = `-- name: DeleteURL :execrows
@@ -25,6 +27,7 @@ func (q *Queries) DeleteURL(ctx context.Context, alias string) (int64, error) {
 const getURL = `-- name: GetURL :one
 SELECT url FROM url
 WHERE alias = $1
+AND (expire_at IS NULL OR expire_at > now())
 `
 
 func (q *Queries) GetURL(ctx context.Context, alias string) (string, error) {
@@ -35,18 +38,19 @@ func (q *Queries) GetURL(ctx context.Context, alias string) (string, error) {
 }
 
 const saveURL = `-- name: SaveURL :one
-INSERT INTO url (url, alias)
-VALUES ($1, $2)
+INSERT INTO url (url, alias, expire_at)
+VALUES ($1, $2, $3)
 RETURNING id
 `
 
 type SaveURLParams struct {
-	Url   string `json:"url"`
-	Alias string `json:"alias"`
+	Url      string           `json:"url"`
+	Alias    string           `json:"alias"`
+	ExpireAt pgtype.Timestamp `json:"expire_at"`
 }
 
 func (q *Queries) SaveURL(ctx context.Context, arg SaveURLParams) (int32, error) {
-	row := q.db.QueryRow(ctx, saveURL, arg.Url, arg.Alias)
+	row := q.db.QueryRow(ctx, saveURL, arg.Url, arg.Alias, arg.ExpireAt)
 	var id int32
 	err := row.Scan(&id)
 	return id, err

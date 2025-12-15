@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-playground/validator/v10"
@@ -13,8 +14,9 @@ import (
 )
 
 type SaveRequest struct {
-	URL   string `json:"url" validate:"required,url"`
-	Alias string `json:"alias,omitempty"`
+	URL      string     `json:"url" validate:"required,url"`
+	Alias    string     `json:"alias,omitempty"`
+	ExpireAt *time.Time `json:"expire_at,omitempty"`
 }
 
 type SaveResponse struct {
@@ -51,9 +53,14 @@ func (h *Handler) Save() http.HandlerFunc {
 			return
 		}
 
+		if req.ExpireAt != nil && req.ExpireAt.Before(time.Now()) {
+			resp.WriteJSON(w, http.StatusUnprocessableEntity, resp.Error("expire_at must be in the future"))
+			return
+		}
+
 		logger.Info("request body decoded", slog.Any("req", req))
 
-		id, alias, err := h.svc.SaveURL(r.Context(), req.URL, req.Alias)
+		id, alias, err := h.svc.SaveURL(r.Context(), req.URL, req.Alias, req.ExpireAt)
 		if err != nil {
 			if errors.Is(err, short.ErrAliasAlreadyExists) {
 				logger.Info("alias already exists",
@@ -65,7 +72,7 @@ func (h *Handler) Save() http.HandlerFunc {
 			}
 			logger.Error("failed to save url",
 				slog.String("url", req.URL),
-				slog.String("alias", alias),
+				slog.String("alias", req.Alias),
 				slog.String("error", err.Error()),
 			)
 			resp.WriteJSON(w, http.StatusInternalServerError, resp.Error("internal error"))
