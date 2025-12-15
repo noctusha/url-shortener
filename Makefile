@@ -18,8 +18,7 @@ endif
 .PHONY: run build migrate-up migrate-down migrate-new docker-up docker-down
 
 run:
-	$(SHELL) -Command "setx CONFIG_PATH '$(CONFIG_PATH)'"
-	CONFIG_PATH=$(CONFIG_PATH) go run $(CMD_DIR)
+	go run $(CMD_DIR)
 
 build:
 	go build -o bin/$(APP_NAME) $(CMD_DIR)
@@ -34,7 +33,7 @@ migrate-new:
 	migrate create -ext sql -dir migrations -seq $(name)
 
 docker-up:
-	docker-compose up -d
+	docker-compose up -d --build
 
 docker-down:
 	docker-compose down

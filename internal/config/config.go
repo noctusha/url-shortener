@@ -9,18 +9,20 @@ import (
 )
 
 type Config struct {
-	Env      string        `yaml:"env" env-default:"local"`
-	User     string        `yaml:"user" env-default:""`
-	Pass     string        `yaml:"pass" env-default:""`
-	Username string        `yaml:"username" env-required:"true"`
-	Password string        `yaml:"password" env-required:"true"`
-	Host     string        `yaml:"host" env-default:"localhost"`
-	HTTPAddr string        `yaml:"http_addr" env-default:":8080"`
-	Port     int           `yaml:"port" env-default:"5432"`
-	Name     string        `yaml:"name" env-default:""`
-	MaxConns int32         `yaml:"max_conns" env-default:"5"`
-	MinConns int32         `yaml:"min_conns" env-default:"2"`
-	Timeout  time.Duration `yaml:"timeout" env-default:"5s"`
+	Env       string        `yaml:"env" env-default:"local"`
+	User      string        `yaml:"user" env-default:""`
+	Pass      string        `yaml:"pass" env-default:""`
+	Username  string        `yaml:"username" env-required:"true"`
+	Password  string        `yaml:"password" env-required:"true"`
+	Host      string        `yaml:"host" env-default:"localhost"`
+	HTTPAddr  string        `yaml:"http_addr" env-default:":8080"`
+	Port      int           `yaml:"port" env-default:"5432"`
+	Name      string        `yaml:"name" env-default:""`
+	MaxConns  int32         `yaml:"max_conns" env-default:"5"`
+	MinConns  int32         `yaml:"min_conns" env-default:"2"`
+	Timeout   time.Duration `yaml:"timeout" env-default:"5s"`
+	RedisAddr string        `yaml:"redis_addr" env-default:"localhost:6379"`
+	RedisDB   int           `yaml:"redis_db" env-default:"0"`
 }
 
 func MustLoad() *Config {

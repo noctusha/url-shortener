@@ -18,7 +18,9 @@ import (
 	"github.com/noctusha/url-shortener/internal/service/shortener"
 	"github.com/noctusha/url-shortener/internal/storage/postgres"
 	mw "github.com/noctusha/url-shortener/internal/transport/http/middleware/logger"
+	"github.com/noctusha/url-shortener/internal/transport/http/middleware/ratelimit"
 	handler "github.com/noctusha/url-shortener/internal/transport/http/shortenerhandler"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -48,6 +50,13 @@ func main() {
 	// service (business logic)
 	service := shortener.NewService(urlRepo, log)
 
+	// redis connection
+	rdb := redis.NewClient(&redis.Options{
+		Addr: cfg.RedisAddr,
+		DB:   cfg.RedisDB,
+	})
+	defer rdb.Close()
+
 	// init router: chi
 	router := chi.NewRouter()
 
@@ -70,7 +79,21 @@ func main() {
 		r.Delete("/{alias}", hand.Delete())
 	})
 
-	router.Get("/{alias}", hand.Redirect())
+	//router.Get("/{alias}", hand.Redirect())
+	router.Route("/{alias}", func(r chi.Router) {
+		perIP := ratelimit.NewLimiter(rdb, "rl:ip", 60, time.Minute)
+		perIPAlias := ratelimit.NewLimiter(rdb, "rl:ipAlias", 10, time.Minute)
+
+		r.Use(perIP.MiddleWare(func(r *http.Request) string {
+			return ratelimit.ClientIP(r)
+		}))
+		r.Use(perIPAlias.MiddleWare(func(r *http.Request) string {
+			alias := chi.URLParam(r, "alias")
+			return ratelimit.ClientIP(r) + ":" + alias
+		}))
+
+		r.Get("/", hand.Redirect())
+	})
 
 	log.Info("starting server", slog.String("address", cfg.HTTPAddr))
 	// init server
