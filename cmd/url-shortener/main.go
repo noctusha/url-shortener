@@ -18,9 +18,13 @@ import (
 	"github.com/noctusha/url-shortener/internal/service/shortener"
 	"github.com/noctusha/url-shortener/internal/storage/postgres"
 	mw "github.com/noctusha/url-shortener/internal/transport/http/middleware/logger"
+	metricsmw "github.com/noctusha/url-shortener/internal/transport/http/middleware/metrics"
 	"github.com/noctusha/url-shortener/internal/transport/http/middleware/ratelimit"
 	handler "github.com/noctusha/url-shortener/internal/transport/http/shortenerhandler"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
+
+	prommetrics "github.com/noctusha/url-shortener/internal/observability/metrics"
 )
 
 func main() {
@@ -30,6 +34,9 @@ func main() {
 
 	// init config: cleanenv
 	cfg := config.MustLoad()
+
+	// init metrics
+	prommetrics.Init()
 
 	// init logger: slog
 	log := logger.New(cfg.Env)
@@ -60,9 +67,13 @@ func main() {
 	// init router: chi
 	router := chi.NewRouter()
 
+	// metrics endpoint
+	router.Get("/metrics", promhttp.Handler().ServeHTTP)
+
 	// middleware
 	router.Use(middleware.RequestID) // tracing requester's ID
-	router.Use(middleware.Logger)    // additional logs
+	router.Use(metricsmw.Middleware)
+	router.Use(middleware.Logger) // additional logs
 	router.Use(mw.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
@@ -79,7 +90,6 @@ func main() {
 		r.Delete("/{alias}", hand.Delete())
 	})
 
-	//router.Get("/{alias}", hand.Redirect())
 	router.Route("/{alias}", func(r chi.Router) {
 		perIP := ratelimit.NewLimiter(rdb, "rl:ip", 60, time.Minute)
 		perIPAlias := ratelimit.NewLimiter(rdb, "rl:ipAlias", 10, time.Minute)

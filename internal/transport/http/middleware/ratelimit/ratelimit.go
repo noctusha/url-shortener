@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/noctusha/url-shortener/internal/observability/metrics"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -37,6 +38,7 @@ func (l *Limiter) MiddleWare(keyFn func(r *http.Request) string) func(http.Handl
 			}
 
 			if !allowed {
+				metrics.RateLimitBlockedTotal.WithLabelValues(l.prefix).Inc()
 				w.Header().Set("Retry-After", strconv.Itoa(int(retryAfter.Seconds())))
 				http.Error(w, "too many requests", http.StatusTooManyRequests)
 				return
