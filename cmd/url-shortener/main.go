@@ -67,9 +67,6 @@ func main() {
 	// init router: chi
 	router := chi.NewRouter()
 
-	// metrics endpoint
-	router.Get("/metrics", promhttp.Handler().ServeHTTP)
-
 	// middleware
 	router.Use(middleware.RequestID) // tracing requester's ID
 	router.Use(metricsmw.Middleware)
@@ -77,6 +74,9 @@ func main() {
 	router.Use(mw.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
+
+	// metrics endpoint
+	router.Get("/metrics", promhttp.Handler().ServeHTTP)
 
 	v := validator.New()
 	// http layer

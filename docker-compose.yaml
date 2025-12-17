@@ -1,9 +1,20 @@
 version: "3.9"
 
 services:
+  url-shortener:
+    build: .
+    #container_name: url-shortener
+    ports:
+      - "8081:8080"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+
   postgres:
     image: postgres:16
-    container_name: urlshortener_postgres
+    #container_name: urlshortener_postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -11,10 +22,33 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
-
+     #- ./pgdata:/var/lib/postgresql/data
+      - urlshortener_pgdata:/var/lib/postgresql/data
   redis:
     image: redis:7-alpine
-    container_name: urlshortener_redis
+    #container_name: urlshortener_redis
     ports:
       - "6379:6379"
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    #container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - url-shortener
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    #container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+volumes:
+  urlshortener_pgdata: {} # FIX: объявляем volume

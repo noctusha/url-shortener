@@ -1,0 +1,14 @@
+env: "dev" # также возможны: local, dev, prod
+user: "user"
+pass: "pass"
+username: "username"
+password: "password"
+host: "postgres"
+http_addr: ":8080"
+port: 5432
+name: "url-shortener"
+max_conns: 5
+min_conns: 2
+timeout: 5s
+redis_addr: "redis:6379"
+redis_db: 0
