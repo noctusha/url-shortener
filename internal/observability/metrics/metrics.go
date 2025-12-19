@@ -34,6 +34,16 @@ var RateLimitBlockedTotal = prometheus.NewCounterVec(
 	[]string{"scope"}, // ip / ipAlias
 )
 
+var RateLimitErrorsTotal = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Namespace: "url_shortener",
+		Subsystem: "ratelimit",
+		Name:      "errors_total",
+		Help:      "Rate limiter backend errors",
+	},
+	[]string{"scope"},
+)
+
 func Init() {
-	prometheus.MustRegister(HTTPRequestsTotal, HTTPRequestDuration, RateLimitBlockedTotal)
+	prometheus.MustRegister(HTTPRequestsTotal, HTTPRequestDuration, RateLimitBlockedTotal, RateLimitErrorsTotal)
 }

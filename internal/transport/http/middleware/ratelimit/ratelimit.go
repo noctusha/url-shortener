@@ -30,9 +30,14 @@ func NewLimiter(rdb *redis.Client, prefix string, limit int, window time.Duratio
 func (l *Limiter) MiddleWare(keyFn func(r *http.Request) string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx, cancel := context.WithTimeout(r.Context(), 100*time.Millisecond)
+			defer cancel()
+
 			key := l.prefix + ":" + keyFn(r)
-			allowed, retryAfter, err := l.allow(r.Context(), key)
+
+			allowed, retryAfter, err := l.allow(ctx, key)
 			if err != nil {
+				metrics.RateLimitErrorsTotal.WithLabelValues(l.prefix).Inc()
 				next.ServeHTTP(w, r)
 				return
 			}
