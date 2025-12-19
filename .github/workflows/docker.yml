@@ -12,7 +12,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }} # owner/repo
+  IMAGE_NAME: ${{ github.repository }} # owner / repo
 
 jobs:
   build-and-push:
